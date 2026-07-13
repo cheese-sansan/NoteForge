@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "noteforge"
 dynamic = ["version"]
-description = "Evidence-aware topic and document distillation pipeline"
+description = "Evidence-aware research reports from topics and documents"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -19,6 +19,13 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
+
+[project.urls]
+Homepage = "https://github.com/cheese-sansan/NoteForge"
+Documentation = "https://github.com/cheese-sansan/NoteForge#readme"
+Repository = "https://github.com/cheese-sansan/NoteForge"
+Issues = "https://github.com/cheese-sansan/NoteForge/issues"
+Changelog = "https://github.com/cheese-sansan/NoteForge/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 api = [

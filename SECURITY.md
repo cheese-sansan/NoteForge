@@ -1,28 +1,27 @@
 # Security Policy
 
-NoteForge is a lightweight local tool and standalone API service. It is not yet a hardened multi-tenant hosted platform.
+NoteForge is designed for local research workflows and standalone API deployments. It is not a hardened multi-tenant hosted service.
 
-## Supported Versions
+## Supported versions
 
-Security fixes target the latest `main` branch until versioned releases begin.
+Security fixes target the latest tagged release and the current `main` branch. Older releases may receive documentation updates but are not guaranteed code fixes.
 
-## Reporting A Vulnerability
+## Reporting a vulnerability
 
-Please do not open a public issue for suspected credential exposure, path traversal, arbitrary file read/write, authentication bypass, or remote code execution.
+Do not open a public issue for suspected credential exposure, path traversal, arbitrary file access, authentication bypass, remote code execution, or disclosure of private document content.
 
-Use GitHub private vulnerability reporting if it is enabled for the repository, or contact the maintainer directly.
+Use GitHub private vulnerability reporting when available, or contact the maintainer directly. Include the affected version or commit, reproduction conditions, potential impact, and the smallest safe proof of concept.
 
-## Operational Guidance
+## Operational boundaries
 
-- Do not expose the API to untrusted networks without setting `API_TOKEN`.
-- Treat uploaded documents as untrusted input.
-- Keep `.env` local and never commit real credentials.
-- Generated artifacts are stored under `outputs/jobs/{job_id}/` and should not be published by default.
-- Simulated literature results must remain labeled as simulated.
+- Set `API_TOKEN` before exposing `/api/v1/jobs/*` beyond a trusted local environment.
+- Treat uploaded documents and extracted text as untrusted input.
+- Keep `.env` and credentials outside version control.
+- Treat `outputs/jobs/{job_id}/` as potentially sensitive and do not publish generated artifacts by default.
+- Keep simulated literature visibly labelled; never present it as retrieved evidence.
+- Verify DOI metadata, generated analysis, and policy conclusions against authoritative sources before relying on them.
 
-## Pre-Publish Audit
-
-Run before publishing:
+## Pre-publication audit
 
 ```bash
 python scripts/privacy_audit.py
