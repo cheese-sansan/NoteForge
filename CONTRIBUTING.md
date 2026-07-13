@@ -1,60 +1,64 @@
 # Contributing
 
-Thank you for considering a contribution to NoteForge.
+Contributions should improve NoteForge as an evidence-aware research report pipeline while preserving its source boundaries and stable interfaces.
 
-## Setup
+## Development setup
 
 ```bash
 git clone https://github.com/cheese-sansan/NoteForge.git
 cd NoteForge
 python -m venv .venv
-.venv\Scripts\activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
 ```
 
-Linux/macOS:
+Activate the environment on Windows:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Or on Linux and macOS:
 
 ```bash
 source .venv/bin/activate
 ```
 
-## Checks
-
-Run before opening a pull request:
+Install the package and development tools:
 
 ```bash
-python check_all.py
-python smoke_test.py
+python -m pip install --upgrade pip
+python -m pip install ".[dev,documents]"
 ```
 
-Run when API or deployment code changes:
+## Required checks
+
+Run the focused checks appropriate to the change. Before a release or a change to shared contracts, run the full set:
 
 ```bash
-python test_api_client.py
-docker compose config
-```
-
-Run before a public release:
-
-```bash
+python -m build --wheel
+ruff check src/noteforge tests scripts
+pyright src/noteforge
+pytest --cov=noteforge --cov-report=term-missing --cov-fail-under=80
+python scripts/check_openapi.py
+python scripts/api_smoke.py
 python scripts/privacy_audit.py --history
-python scripts/privacy_audit.py --include-outputs
+docker compose config
+docker compose build api
 ```
 
-## Contribution Rules
+Changes to HTTP API v1 require deliberate review of `tests/snapshots/openapi_v1.json`. Changes to packaging should also install the built wheel in a clean environment and exercise the CLI and SDK outside the checkout.
 
-- Keep explicit Mock mode usable without a network connection or API keys.
-- Never add an automatic Mock fallback to a real Provider execution path.
-- Do not commit `.env`, credentials, generated outputs, cache files, IDE metadata, or local-only documents.
-- Do not include real API keys, tokens, private paths, phone numbers, or generated reports in code, tests, docs, issues, or pull requests.
-- Keep simulated literature clearly labeled with `source_type: simulated`.
-- Add tests for behavior changes when practical.
-- Keep unrelated refactors out of focused bug fixes.
+## Contribution principles
 
-## Pull Request Checklist
+- Keep `mock` deterministic and usable without a network connection or API key.
+- Never add an automatic simulated fallback to a real-provider execution path.
+- Keep simulated records visibly labelled with `source_type: simulated`.
+- Preserve source IDs, warnings, and verification status when transforming evidence.
+- Add or update tests for behavior and contract changes.
+- Keep focused fixes separate from unrelated refactors.
+- Do not commit credentials, `.env`, generated jobs, private documents, local paths, caches, or IDE metadata.
 
-- Describe the problem and solution.
-- List validation commands that passed.
-- Note any known limitations.
-- Confirm `python scripts/privacy_audit.py` passes.
+## Pull requests
+
+Describe the problem, the chosen solution, user-visible or compatibility impact, and the checks that passed. Call out evidence-model, API, migration, privacy, or Docker implications explicitly.
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for project attribution and [SECURITY.md](SECURITY.md) for private vulnerability reporting.

@@ -2,10 +2,10 @@
 
 ## Project ownership
 
-- [Hueter](https://github.com/cheese-sansan) is the creator and maintainer of NoteForge and is responsible for its design, implementation decisions, review, and releases.
+- [Hueter](https://github.com/cheese-sansan) is the creator and maintainer of NoteForge and is responsible for its design, implementation decisions, final review, and releases.
 
-## Development assistance
+## AI development contributor
 
-NoteForge has been developed with assistance from **ChatGPT Codex**, including support with code generation, refactoring, testing, and documentation.
+- [ChatGPT Codex Connector](https://github.com/apps/chatgpt-codex-connector) (`chatgpt-codex-connector[bot]`) has contributed development assistance across code generation, refactoring, testing, and documentation.
 
-AI-assisted suggestions are reviewed, tested, and integrated by the maintainer. ChatGPT Codex is credited as a development tool, not as an independent human contributor or project maintainer.
+The Connector is an AI development contributor, not a human maintainer. All AI-assisted changes are reviewed, validated, and integrated by Hueter.

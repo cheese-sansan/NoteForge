@@ -1,5 +1,7 @@
 # Developer Integration
 
+The top-level SDK is intentionally small: construct a typed request, run the shared pipeline, and inspect a typed result. Applications should not reproduce CLI or API orchestration internally.
+
 ## Stable SDK
 
 ```python
@@ -37,11 +39,15 @@ class MyProvider(LiteratureProvider):
         ...
 ```
 
-Provider records must label `source_type` and `source_provider`. Simulated records must never be represented as retrieved evidence.
+Provider records must label `source_type` and `source_provider`. Simulated records must never be represented as retrieved evidence. Provider failures should return an explicit status and warnings or raise a structured provider error; they must not silently substitute Mock results.
 
-## Internal persistence access
+## Structured errors
 
-Persistence classes are available for operational tools but are not part of the small top-level SDK surface:
+`NoteForgeError` exposes `code`, `message`, `retryable`, and `details`. Callers may branch on the error code, but should retain the human-readable message and diagnostic details when reporting failures.
+
+## Operational persistence access
+
+Persistence classes are available for maintenance tools but are not part of the small top-level SDK surface:
 
 ```python
 from noteforge.storage.context import ContextStore
@@ -51,4 +57,8 @@ state = StateManager("my-analysis-job").load_state()
 context = ContextStore("my-analysis-job").load_all()
 ```
 
-Do not import v0.2 paths such as `core.pipeline`, `tasks.t2_literature_search`, or `utils.state_manager`; they were removed in v0.3.
+Do not import removed v0.2 paths such as `core.pipeline`, `tasks.t2_literature_search`, or `utils.state_manager`.
+
+## Verification responsibility
+
+Source metadata and model-generated synthesis are useful inputs to a research workflow, not proof that a publication, finding, or policy conclusion has been fully verified. Integrations should preserve NoteForge warnings and source labels in their own user interfaces.

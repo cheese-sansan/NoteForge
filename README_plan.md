@@ -1,40 +1,43 @@
 # NoteForge Public Roadmap
 
-NoteForge is a lightweight, verifiable topic and document distillation pipeline. The project prioritizes data authenticity, provenance, and report trustworthiness over feature count.
+NoteForge is an evidence-aware research report pipeline for topics and documents. The roadmap prioritizes inspectable provenance, stable interfaces, and explicit capability boundaries over feature count.
 
-## v0.2: Evidence-Aware Retrieval
+## Product principles
 
-Implemented in the current release:
+- Retrieved metadata, source-document facts, model inference, simulated data, and unverified content remain distinguishable.
+- A real-provider failure stays visible and never becomes an implicit simulated fallback.
+- CLI, TUI, API, Docker, and Python integrations share one semantic SDK contract.
+- Reports expose uncertainty and evidence gaps instead of hiding them behind polished prose.
 
-- Real Crossref literature retrieval with explicit provider selection.
-- Source records for external APIs, local documents, LLM inference, simulated data, and unverified content.
-- Evidence-aware T3 claims and structured T5 technical cases.
-- Strict T6 policy evidence gating; no factual policy output without a cited source.
-- Final `report.md` with sources, warnings, and compatibility output for v0.1 clients.
-- Real topic/document examples and an explicit Mock-versus-real behavior guide.
+## v0.3: Engineering foundation
 
-## v0.3: Python Engineering (implemented)
+The current baseline provides:
 
-- Adopt `pyproject.toml` and a `src/noteforge/` package layout.
-- Add an installed `noteforge` command and stable SDK models.
-- Replace task-ID-centric context contracts with semantic models while retaining a migration reader.
-- Formalize the Job state machine and structured error codes.
-- Add Ruff, Pyright, coverage thresholds, and OpenAPI contract checks.
+- An installable `src/noteforge` package for Python 3.10–3.13.
+- A unified `noteforge` command and typed dataclass SDK.
+- Semantic schema-v3 context, explicit Job/Stage state machines, and structured errors.
+- Transactional, idempotent migration of persisted v0.2 jobs.
+- Crossref, deterministic Mock, and explicitly simulated provider modes.
+- Wheel-first CI with Ruff, Pyright, coverage, OpenAPI, privacy, API, and Docker gates.
 
-## v0.4: Report Quality
+## v0.4: Report quality
+
+The next release is reserved for report-level trust and portability:
 
 - Citation numbering, DOI/URL deduplication, and citation completeness checks.
-- Evidence grades and conflict/obsolescence detection.
+- Evidence grades plus conflict and obsolescence detection.
 - Report presets for technical research, literature review, industry analysis, policy analysis, and product comparison.
 - JSON and HTML exports before DOCX and PDF.
+- Representative real-source fixtures for technical-case and policy-assessment validation.
 
-## v1.0 Release Conditions
+## v1.0 release conditions
 
-- Installable Python package with stable CLI, API, and SDK interfaces.
-- At least one production-ready real Provider and complete provenance on all outputs.
-- T5/T6 validated against real source material.
-- Citation traceability, representative examples, passing CI, and documented capability boundaries.
+- Stable CLI, HTTP API v1, and small top-level Python SDK.
+- At least one production-ready real literature provider.
+- Complete provenance labels on every report section.
+- Citation traceability and documented verification limits.
+- Reproducible wheel and Docker delivery with all release gates passing.
 
-## Deferred Until After v1.0
+## Outside the pre-v1 scope
 
-GraphRAG, heavy vector databases, large knowledge graphs, multi-tenant authorization, complex frontends, cloud SaaS, and open-ended multi-agent loops remain out of scope.
+GraphRAG, heavy vector databases, large knowledge graphs, multi-tenant authorization, complex browser frontends, hosted SaaS, and open-ended multi-agent orchestration are intentionally deferred.
