@@ -12,19 +12,20 @@ This file records the project state for a new agent session on the same developm
 | Repository | `cheese-sansan/NoteForge` | `verified-current` |
 | Repository generation | Recreated public repository, ID `1344019864` | `verified-current` |
 | Branch | `main` | `verified-current` |
-| Latest engineering commit | `53da207b3c96d7cfa4ce2c09cf493fa9e77ea874` | `verified-current` |
-| Preserved engineering history | 6 linear commits, 0 merges | `verified-current` |
+| Latest engineering commit | `d4f4a5f803be90909427ef96e551039fd7031b19` | `verified-current` |
+| Normalized engineering history | 6 linear commits, 0 merges | `verified-current` |
 | Package version | `0.3.0` | `verified-current` |
-| Latest tag | `v0.3.0` at `018a094c839b0bb04df41f383dd50b41eb317a0d` | `verified-current` |
+| Latest tag | `v0.3.0` at `e16b4edbc50f5e6bc484452163efa0f54d1be222` | `verified-current` |
 | Open issues | 0 | `verified-current` |
 | Open pull requests | 0 | `verified-current` |
-| GitHub Actions on engineering `main` | Passed at `53da207`; run 32654172553 | `verified-current` |
+| GitHub Actions on rewritten `main` | Derive from the current remote HEAD; pre-rewrite runs are historical evidence only | `requires-live-check` |
 | Remote branches | `main` only | `verified-current` |
 
 ## Status vocabulary
 
 - `verified-current`: checked on 2026-08-24 against the workspace or GitHub
 - `verified-historical`: passed at the stated earlier checkpoint; not evidence of a current rerun
+- `requires-live-check`: intentionally not self-recorded because the value changes when this handoff commit is pushed
 - `unresolved`: observed defect, inconsistency, or decision without an applied fix
 - `planned`: proposed scope without an implementation claim
 - `accepted-limitation`: intentional boundary, not a defect in the current release
@@ -44,9 +45,9 @@ Conflicts use this priority:
 
 ## Current objective
 
-No feature implementation is in progress. The CI repair is integrated into `main@53da207`, the repository has been recreated, and the new `main` workflow is green. The next product objective is the v0.4 report-quality milestone in `README_plan.md`.
+No feature implementation is in progress. The CI repair is integrated into engineering `main@d4f4a5f`, the repository has been recreated, and repository attribution has been normalized to the sole maintainer. The next product objective is the v0.4 report-quality milestone in `README_plan.md`.
 
-This handoff follows the six preserved engineering commits as a separate documentation commit. Its exact commit hash is intentionally derived from Git rather than self-recorded in this file.
+This handoff follows the six normalized engineering commits and the repository-recreation handoff as a separate attribution documentation commit. Its exact commit hash and corresponding GitHub Actions run are intentionally derived live rather than self-recorded in this file.
 
 ## Completed work
 
@@ -56,11 +57,11 @@ The sixth engineering commit is workflow-only:
 
 | Commit | Subject | Scope |
 | --- | --- | --- |
-| `53da207` | `ci: fix Python discovery and update actions` | `.github/workflows/ci.yml` only |
+| `d4f4a5f` | `ci: fix Python discovery and update actions` | `.github/workflows/ci.yml` only |
 
 The commit upgrades `actions/checkout` and `actions/setup-python` to v6. The quality job names the setup step and passes `${{ steps.setup-python.outputs.python-path }}` to Pyright instead of the unresolved literal `python` path.
 
-[CI run 32654172553](https://github.com/cheese-sansan/NoteForge/actions/runs/32654172553) on the recreated repository passed the wheel quality gate, Python 3.10 through 3.13 wheel jobs, and Docker build. Pyright reported 0 errors and 0 warnings. The run log contains no Node 20 deprecation or forced-runtime warning.
+[CI run 32654549249](https://github.com/cheese-sansan/NoteForge/actions/runs/32654549249) passed the wheel quality gate, Python 3.10 through 3.13 wheel jobs, and Docker build before the attribution-only history rewrite. Pyright reported 0 errors and 0 warnings. This run is historical tree evidence; the current rewritten HEAD requires its own live run.
 
 The previous public GitHub repository was deleted after a verified local backup. A new public `cheese-sansan/NoteForge` repository was created on 2026-08-24 at 01:13:40 Asia/Shanghai. Only `main` and the three preserved annotated release tags were submitted. No pull request or secondary branch exists.
 
@@ -112,35 +113,28 @@ The committed OpenAPI snapshot covers:
 
 The HTTP API retains legacy `T0` through `T6` presentation fields where required for v1 compatibility. Schema-v3 storage does not use those keys internally. Structured errors may add `error_code` without removing legacy `detail` or `error` fields.
 
-### Linear history and attribution
+### Linear history and sole attribution
 
-The preserved engineering history contains six commits and no merge commits:
+The normalized engineering history contains six commits and no merge commits:
 
 | Commit | Primary author | Subject |
 | --- | --- | --- |
-| `e6882b3` | Hueter | `chore: establish NoteForge v0.1.0 baseline` |
-| `9717f9a` | Hueter | `feat: release NoteForge v0.2.0 evidence pipeline` |
-| `f220a32` | Hueter | `feat!: establish NoteForge v0.3.0 engineering foundation` |
-| `b01c549` | Hueter | `docs: correct project attribution` |
-| `018a094` | `chatgpt-codex-connector[bot]` | `docs: redefine NoteForge project presentation` |
-| `53da207` | Hueter | `ci: fix Python discovery and update actions` |
+| `aa4136b` | Hueter | `chore: establish NoteForge v0.1.0 baseline` |
+| `d121d08` | Hueter | `feat: release NoteForge v0.2.0 evidence pipeline` |
+| `4057621` | Hueter | `feat!: establish NoteForge v0.3.0 engineering foundation` |
+| `5c5538b` | Hueter | `docs: correct project attribution` |
+| `e16b4ed` | Hueter | `docs: redefine NoteForge project presentation` |
+| `d4f4a5f` | Hueter | `ci: fix Python discovery and update actions` |
 
-A through D contain the Connector Bot as co-author. E contains Hueter as co-author. F is Hueter-authored. Reachable engineering commit messages contain no Claude, Anthropic, DeepSeek, old Bot email, or `Assisted-by` attribution.
+All reachable commits use `Hueter <w8p1p6t0@gmail.com>` as both author and committer. Reachable commit messages contain no `Co-authored-by`, Bot email, or `Assisted-by` attribution. `CONTRIBUTORS.md` lists Hueter as the sole repository contributor.
 
-Pre-recreation GitHub contributor data from 2026-08-12 is historical only:
-
-| Endpoint | Hueter / `cheese-sansan` | Connector Bot | Other entries |
-| --- | ---: | ---: | ---: |
-| `/stats/contributors` | 5 | 5 | 0 |
-| `/contributors` | 4 primary-author commits | 1 primary-author commit | 0 |
-
-The recreated repository contributor endpoints are allowed to recompute from the submitted Git history. Git objects and commit metadata remain the attribution source of truth.
+GitHub contributor displays are derived from the rewritten default-branch history. GitHub documents that contributor statistics may take about 24 hours to refresh after a force push; live endpoint data is therefore checked after submission rather than frozen in this file.
 
 Tags point to:
 
-- `v0.1.0` -> `e6882b361a0b80009972c441259ec905c1a487cf`
-- `v0.2.0` -> `9717f9a48359945188566d1a92e1252650b1df8b`
-- `v0.3.0` -> `018a094c839b0bb04df41f383dd50b41eb317a0d`
+- `v0.1.0` -> `aa4136b70081c9b62448d543e3ecb16b5cd3effd`
+- `v0.2.0` -> `d121d0854f341a5f015551e5774696bc6a3cb6b3`
+- `v0.3.0` -> `e16b4edbc50f5e6bc484452163efa0f54d1be222`
 
 The remote has only `main`. It has no `master`, CI feature branch, or contributor-attribution temporary branch.
 
@@ -151,22 +145,19 @@ The remote has only `main`. It has no `master`, CI feature branch, or contributo
 | Check | Result | Status |
 | --- | --- | --- |
 | Recreated repository | Public ID `1344019864`, default branch `main` | `verified-current` |
-| Engineering `main` alignment before this handoff commit | `53da207` locally and remotely | `verified-current` |
-| Preserved engineering history | 6 commits, 0 merges | `verified-current` |
+| Engineering history before the two handoff commits | `d4f4a5f`, 6 commits, 0 merges | `verified-current` |
+| Reachable Git author and committer identities | Hueter only | `verified-current` |
+| Reachable co-author trailers | 0 | `verified-current` |
 | Remote branch set | `main` only | `verified-current` |
 | Open issues and pull requests | 0 and 0 | `verified-current` |
-| Recreated-repository `main` CI | Run 32654172553 passed all six jobs | `verified-current` |
-| `main` Pyright | 0 errors, 0 warnings | `verified-current` |
-| `main` Python matrix | 3.10, 3.11, 3.12, and 3.13 passed | `verified-current` |
-| `main` Docker job | Compose validation and image build passed | `verified-current` |
-| GitHub-maintained actions | `checkout@v6` and `setup-python@v6`; no Node 20 warning | `verified-current` |
-| Recreated `v0.1.0` and `v0.2.0` runs | Runs 32654172628 and 32654172504 passed | `verified-current` |
-| Recreated `v0.3.0` run | Run 32654172603 reproduces the old Pyright failure at preserved commit `018a094` | `verified-current` |
+| Pre-rewrite recreated-repository `main` CI | Run 32654549249 passed all six jobs | `verified-historical` |
+| Rewritten `main` CI | Query the run whose head SHA equals current remote `main` | `requires-live-check` |
+| Rewritten release-tag runs | Query by the rewritten tag targets above | `requires-live-check` |
 | Storage concurrency | Thread-level tests exist; locks use process-local `threading.RLock` | `accepted-limitation` |
 
 ### Local checks from 2026-08-24
 
-These checks ran before and after the local fast-forward of `main` to `53da207`:
+These checks ran against the rewritten history and current tree before submission:
 
 | Check | Result | Status |
 | --- | --- | --- |
@@ -198,7 +189,7 @@ These checks ran against the final v0.3 tree before the atomic `main` and tag up
 | Docker image build | Passed | `verified-historical` |
 | Running container health | `/health` returned `{"status":"ok"}` | `verified-historical` |
 
-The recreated `main` run is current release-gate evidence. The preserved `v0.3.0` tag still contains its original workflow and therefore remains red when rerun; moving the release tag would falsify release history.
+The pre-rewrite recreated `main` run is historical tree evidence. The rewritten `v0.3.0` target retains its original workflow tree and is expected to reproduce the old Pyright failure when rerun; current `main` contains the CI repair.
 
 ## Unresolved items
 
@@ -206,7 +197,7 @@ The recreated `main` run is current release-gate evidence. The preserved `v0.3.0
 | --- | --- | --- | --- |
 | P1 | v0.3 changelog date differs from the tag timestamp | `CHANGELOG.md` says 2026-07-11; tag and E commit are dated 2026-07-13 | Decide whether the changelog date represents release preparation or publication; edit only after that decision |
 | P2 | Tests emit one Starlette dependency warning | FastAPI `TestClient` reports that its `httpx` integration is deprecated | Evaluate the supported FastAPI, Starlette, and HTTP client combination; do not hide the warning without a compatibility decision |
-| P2 | Preserved `v0.3.0` tag CI is red | Tag points to original commit `018a094`, before the CI repair | Preserve the tag; use green `main` as current release-gate evidence |
+| P2 | Rewritten `v0.3.0` tag CI is expected to remain red | Tag target `e16b4ed` retains the release tree from before the CI repair | Preserve the release snapshot; use green current `main` as release-gate evidence |
 | P2 | Release checklist wording exceeds present CI evidence | The matrix installs wheels on Python 3.10 through 3.13; installed CLI/SDK outside-checkout smoke runs only in the Python 3.10 quality job | Preserve the distinction when reporting compatibility |
 | P2 | Local ignored legacy directories remain | `core/`, `tasks/`, and `utils/` contain only pre-v0.3 `.pyc` files | Treat as stale local cache, never as tracked compatibility code |
 | P2 | Job and migration locks are process-local | Storage modules use `threading.RLock`; concurrency tests use threads | Do not claim cross-process serialization; assess an operating-system lock before supporting concurrent processes on one job |
@@ -292,7 +283,17 @@ Plain `python` may resolve to the Windows Store alias. Pyright interpreter check
 
 ### Recovery material
 
-The latest verified pre-recreation backup is:
+The latest verified pre-attribution-rewrite backup is:
+
+`E:\NoteForge-backups\20260824-013436-pre-contributor-rewrite`
+
+It contains:
+
+- `noteforge-before-rewrite.bundle`: all refs and complete pre-rewrite history; SHA-256 `BB734C42299EC8D29B562D35C3BBEAFE0F37FA0A5EB37758DC8C6981AE2A6E13`
+- `tracked-main-before-rewrite.zip`: the seven-commit tree at `f91da14`; SHA-256 `9B35C6E6150073EFBAF26705382D788075CFF289148D8A397456A5A663EFB59C`
+- `HANDOFF-before-rewrite.md`: the committed pre-rewrite handoff; SHA-256 `F1897221462A3ABBB1DFAC0FA6AB76E8CE6E268D25DBFA78B1C813DBA3934BA3`
+
+The verified pre-recreation backup is:
 
 `E:\NoteForge-backups\20260824-011144-pre-github-recreate`
 
