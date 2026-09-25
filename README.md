@@ -134,19 +134,20 @@ Set `API_TOKEN` before exposing the API beyond a trusted local environment. The 
 
 ## Documentation
 
+- [Documentation index](docs/README.md)
 - [CLI, TUI, and API](docs/cli_tui_api.md)
 - [Python SDK and provider integration](docs/developer_integration.md)
 - [Evidence modes and literature providers](docs/mock_vs_real_provider.md)
 - [Migrating from v0.2](docs/migration_v0.3.md)
 - [Development guide](DEVELOPMENT.md)
-- [Public roadmap](README_plan.md)
+- [Public roadmap](docs/roadmap.md)
 - [v0.3.0 release notes](docs/releases/v0.3.0.md)
 - [Sample Crossref report](examples/sample_crossref_report.md)
 - [Sample document report](examples/sample_document_report.md)
 
 ## Project status
 
-Version 0.3 establishes the installable package, typed semantic contracts, unified interfaces, migration path, and release gates. Version 0.4 is reserved for citation completeness, evidence grading, report presets, and JSON/HTML exports. See the [roadmap](README_plan.md).
+Version 0.3 establishes the installable package, typed semantic contracts, unified interfaces, migration path, and release gates. Version 0.4 is reserved for citation completeness, evidence grading, report presets, and JSON/HTML exports. See the [roadmap](docs/roadmap.md).
 
 ## Contributing and security
 

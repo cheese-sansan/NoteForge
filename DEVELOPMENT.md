@@ -15,6 +15,17 @@ Job states are `PENDING`, `RUNNING`, `COMPLETED`, and `FAILED`. Stage states add
 
 The package uses a `src/noteforge` layout. The removed `core`, `tasks`, and `utils` paths are not compatibility packages. HTTP API v1 remains a compatibility boundary and is guarded by `tests/snapshots/openapi_v1.json`.
 
+Repository layout:
+
+- `src/noteforge/`: package code and public interfaces
+- `tests/`: contract and regression tests, fixtures, and the OpenAPI snapshot
+- `scripts/`: local checks and smoke-test entry points
+- `docs/`: guides, roadmap, release notes, and release checklist
+- `examples/`: sample inputs and generated-report examples
+- Root Markdown files: project overview, development, contribution, security, changelog, and operational handoff
+
+Start at the [documentation index](docs/README.md) for the maintained guides.
+
 ## Environment
 
 ```bash

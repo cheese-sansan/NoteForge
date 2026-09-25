@@ -134,19 +134,20 @@ curl http://localhost:8000/api/v1/jobs/result/{job_id}
 
 ## 文档
 
+- [文档索引](docs/README.md)
 - [CLI、TUI 与 API](docs/cli_tui_api.md)
 - [Python SDK 与 Provider 集成](docs/developer_integration.md)
 - [证据模式与文献 Provider](docs/mock_vs_real_provider.md)
 - [从 v0.2 迁移](docs/migration_v0.3.md)
 - [开发指南](DEVELOPMENT.md)
-- [公开路线图](README_plan.md)
+- [公开路线图](docs/roadmap.md)
 - [v0.3.0 发布说明](docs/releases/v0.3.0.md)
 - [Crossref 示例报告](examples/sample_crossref_report.md)
 - [文档分析示例报告](examples/sample_document_report.md)
 
 ## 项目状态
 
-v0.3 建立可安装包、强类型语义契约、统一入口、迁移路径和发布质量门。v0.4 将聚焦引用完整性、证据等级、报告预设与 JSON/HTML 导出。详见[路线图](README_plan.md)。
+v0.3 建立可安装包、强类型语义契约、统一入口、迁移路径和发布质量门。v0.4 将聚焦引用完整性、证据等级、报告预设与 JSON/HTML 导出。详见[路线图](docs/roadmap.md)。
 
 ## 贡献与安全
 

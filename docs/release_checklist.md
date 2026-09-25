@@ -3,7 +3,7 @@
 - Confirm `src/noteforge/version.py`, package metadata, CLI, TUI, and FastAPI report `0.3.0`.
 - Confirm wheel installation works outside the checkout on Python 3.10–3.13.
 - Confirm all CLI subcommands and the SDK example run from the installed wheel.
-- Confirm no legacy root launch scripts, `core/tasks/utils`, or `requirements-*.txt` files remain.
+- Confirm maintenance scripts live under `scripts/` and no legacy root launch scripts, tracked `core/tasks/utils` packages, or `requirements-*.txt` files remain.
 - Confirm all tests pass with no skips and coverage is at least 80%.
 - Run Ruff, Pyright standard, OpenAPI snapshot, API smoke, privacy audit, Compose validation, and Docker build.
 - Confirm v0.2 migration success, byte-exact backups, idempotence, rollback, and concurrent first-read tests pass.

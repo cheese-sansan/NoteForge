@@ -4,7 +4,11 @@ All notable changes to NoteForge are documented here.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Changed
+
+- Group local check and smoke entry points under `scripts/` and remove a duplicate API launcher.
+- Move the public roadmap to `docs/roadmap.md` and add a documentation index.
+- Archive the 2026-08-24 handoff and replace it with a dated current-state handoff.
 
 ## v0.3.0 - 2026-07-11
 
