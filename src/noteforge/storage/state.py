@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import json
-import os
 import re
-import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from noteforge.errors import ErrorCode, InvalidStateTransition, NoteForgeError
 from noteforge.models import ArtifactSet, JobState, JobStatus, StageRecord, StageStatus
+from noteforge.storage.atomic import write_json
+from noteforge.storage.locking import JobLock
 
 DEFAULT_OUTPUT_ROOT = Path("outputs")
 TZ = timezone(timedelta(hours=8))
@@ -56,17 +56,12 @@ def validate_job_id(job_id: str) -> str:
 
 
 class StateManager:
-    _locks: dict[str, threading.RLock] = {}
-    _locks_guard = threading.Lock()
-
     def __init__(self, job_id: str, output_root: Path | str = DEFAULT_OUTPUT_ROOT):
         self.job_id = validate_job_id(job_id)
         self.output_root = Path(output_root)
         self._job_dir = self.output_root / "jobs" / self.job_id
         self._state_file = self._job_dir / "task_state.json"
-        lock_key = str(self._state_file.resolve())
-        with self._locks_guard:
-            self._lock = self._locks.setdefault(lock_key, threading.RLock())
+        self._lock = JobLock(self.job_id, self.output_root)
 
     @property
     def job_dir(self) -> Path:
@@ -186,6 +181,22 @@ class StateManager:
             _transition_job(state, target)
             self.save_state(state)
 
+    def recover_from(self, name: str):
+        """Invalidate an interrupted/missing result and all dependent stages."""
+        with self._lock:
+            state = self.load_state()
+            start = BASE_STAGES.index(name)
+            for index, stage_name in enumerate(BASE_STAGES[start:]):
+                stage = state.stages[stage_name]
+                stage.status = StageStatus.FAILED if index == 0 else StageStatus.PENDING
+                stage.finished_at = None
+                stage.error = None
+                stage.history.append({"status": stage.status.value, "timestamp": now_iso()})
+            state.status = JobStatus.FAILED
+            state.current_stage = name
+            state.error = None
+            self.save_state(state)
+
 
 def _transition_job(state: JobState, target: JobStatus):
     if state.status is target:
@@ -193,12 +204,9 @@ def _transition_job(state: JobState, target: JobStatus):
     if target not in ALLOWED_JOB_TRANSITIONS[state.status]:
         raise InvalidStateTransition(state.status.value, target.value)
     state.status = target
+    if target is JobStatus.RUNNING:
+        state.error = None
 
 
 def _atomic_json_write(path: Path, data: dict):
-    temp = path.with_suffix(path.suffix + ".tmp")
-    with temp.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temp, path)
+    write_json(path, data)

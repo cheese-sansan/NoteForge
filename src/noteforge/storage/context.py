@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
-import threading
 from pathlib import Path
 from typing import Any
 
 from noteforge.errors import ErrorCode, NoteForgeError
 from noteforge.models import SCHEMA_VERSION, JsonModel
+from noteforge.storage.atomic import write_json
+from noteforge.storage.locking import JobLock
 from noteforge.storage.state import DEFAULT_OUTPUT_ROOT, validate_job_id
 
 SEMANTIC_KEYS = {
@@ -19,17 +19,12 @@ SEMANTIC_KEYS = {
 
 
 class ContextStore:
-    _locks: dict[str, threading.RLock] = {}
-    _locks_guard = threading.Lock()
-
     def __init__(self, job_id: str, output_root: Path | str = DEFAULT_OUTPUT_ROOT):
         self.job_id = validate_job_id(job_id)
         self.output_root = Path(output_root)
         self._job_dir = self.output_root / "jobs" / self.job_id
         self._ctx_file = self._job_dir / "context_data.json"
-        lock_key = str(self._ctx_file.resolve())
-        with self._locks_guard:
-            self._lock = self._locks.setdefault(lock_key, threading.RLock())
+        self._lock = JobLock(self.job_id, self.output_root)
 
     @property
     def context_file(self) -> Path:
@@ -47,6 +42,15 @@ class ContextStore:
         if key not in SEMANTIC_KEYS:
             raise ValueError(f"unknown semantic context key: {key}")
         return self.load_all().get(key)
+
+    def discard(self, keys: list[str]):
+        with self._lock:
+            context = self.load_all()
+            for key in keys:
+                if key not in SEMANTIC_KEYS:
+                    raise ValueError(f"unknown semantic context key: {key}")
+                context.pop(key, None)
+            _atomic_write(self._ctx_file, context)
 
     def load_all(self) -> dict[str, Any]:
         with self._lock:
@@ -70,10 +74,4 @@ class ContextStore:
 
 
 def _atomic_write(path: Path, data: dict[str, Any]):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temp = path.with_suffix(path.suffix + ".tmp")
-    with temp.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temp, path)
+    write_json(path, data)

@@ -46,6 +46,8 @@ noteforge run --topic "transformer model evaluation" --provider crossref
 noteforge run --file ./examples/sample_paper_abstract.md --provider crossref
 
 noteforge report demo
+noteforge export demo --format json
+noteforge export demo --format html
 ```
 
 Install optional interfaces and document parsers when needed:
@@ -106,6 +108,8 @@ task_state.json
 context_data.json
 resume_log.txt
 report.md
+report.json
+report.html
 ```
 
 Version 0.3 removes the old root scripts, `core/tasks/utils` import paths, and requirements files. Existing v0.2 jobs are backed up and migrated transactionally on first read, or in advance with:
@@ -138,6 +142,7 @@ Set `API_TOKEN` before exposing the API beyond a trusted local environment. The 
 - [CLI, TUI, and API](docs/cli_tui_api.md)
 - [Python SDK and provider integration](docs/developer_integration.md)
 - [Evidence modes and literature providers](docs/mock_vs_real_provider.md)
+- [Report quality, exports, and recovery](docs/report_quality.md)
 - [Migrating from v0.2](docs/migration_v0.3.md)
 - [Development guide](DEVELOPMENT.md)
 - [Public roadmap](docs/roadmap.md)
@@ -147,7 +152,7 @@ Set `API_TOKEN` before exposing the API beyond a trusted local environment. The 
 
 ## Project status
 
-Version 0.3 establishes the installable package, typed semantic contracts, unified interfaces, migration path, and release gates. Version 0.4 is reserved for citation completeness, evidence grading, report presets, and JSON/HTML exports. See the [roadmap](docs/roadmap.md).
+The latest tagged release is 0.3.0. The current unreleased v0.4 increment adds conservative claim attribution, citation checks, JSON/HTML exports, and recovery with local process locks. Report presets, scientific conflict detection, and obsolescence checks remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Contributing and security
 

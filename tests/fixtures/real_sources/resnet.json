@@ -1,0 +1,20 @@
+{
+  "fixture_kind": "short excerpt from a real primary source",
+  "checked_on": "2026-10-11",
+  "source_url": "https://arxiv.org/abs/1512.03385",
+  "source_version": "arXiv:1512.03385v1",
+  "literature": {
+    "source_id": "L1",
+    "title": "Deep Residual Learning for Image Recognition",
+    "authors": ["Kaiming He", "Xiangyu Zhang", "Shaoqing Ren", "Jian Sun"],
+    "year": 2015,
+    "doi": "10.48550/arXiv.1512.03385",
+    "url": "https://arxiv.org/abs/1512.03385",
+    "source_provider": "arxiv-fixture",
+    "source_type": "external_api",
+    "abstract": "Deeper neural networks are more difficult to train.",
+    "key_findings": [],
+    "metrics": [],
+    "limitations": []
+  }
+}

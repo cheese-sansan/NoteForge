@@ -46,6 +46,8 @@ noteforge run --topic "transformer model evaluation" --provider crossref
 noteforge run --file ./examples/sample_paper_abstract.md --provider crossref
 
 noteforge report demo
+noteforge export demo --format json
+noteforge export demo --format html
 ```
 
 按需安装 API 接口和文档解析器：
@@ -106,6 +108,8 @@ task_state.json
 context_data.json
 resume_log.txt
 report.md
+report.json
+report.html
 ```
 
 v0.3 删除了旧根目录脚本、`core/tasks/utils` 导入路径和 requirements 文件。已有 v0.2 Job 会在首次读取时进行备份与事务式迁移，也可以提前执行：
@@ -138,6 +142,7 @@ curl http://localhost:8000/api/v1/jobs/result/{job_id}
 - [CLI、TUI 与 API](docs/cli_tui_api.md)
 - [Python SDK 与 Provider 集成](docs/developer_integration.md)
 - [证据模式与文献 Provider](docs/mock_vs_real_provider.md)
+- [报告质量、导出与任务恢复](docs/report_quality.md)
 - [从 v0.2 迁移](docs/migration_v0.3.md)
 - [开发指南](DEVELOPMENT.md)
 - [公开路线图](docs/roadmap.md)
@@ -147,7 +152,7 @@ curl http://localhost:8000/api/v1/jobs/result/{job_id}
 
 ## 项目状态
 
-v0.3 建立可安装包、强类型语义契约、统一入口、迁移路径和发布质量门。v0.4 将聚焦引用完整性、证据等级、报告预设与 JSON/HTML 导出。详见[路线图](docs/roadmap.md)。
+最新标签版本仍为 v0.3.0。当前未发布的 v0.4 增量已加入保守的结论证据关联、引用检查、JSON/HTML 导出，以及本地跨进程锁和任务恢复。报告预设、学术冲突检测和时效性检查仍在规划中。详见[路线图](docs/roadmap.md)。
 
 ## 贡献与安全
 

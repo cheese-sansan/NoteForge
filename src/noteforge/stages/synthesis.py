@@ -107,6 +107,7 @@ def _extract_evidence(lit_results: list, t0_output=None) -> dict:
             "以 JSON 格式返回：\n"
             "{\n"
             '  "claims": ["核心主张1", ...],\n'
+            '  "claim_records": [{"text": "核心主张1", "evidence_ids": ["L1"]}],\n'
             '  "metrics": [{"name": "指标名", "value": "数值", "source": "来源文献"}, ...],\n'
             '  "methods": ["方法1", ...],\n'
             '  "evidence_snippets": [{"text": "原文证据", "source": "来源"}, ...]\n'
@@ -129,7 +130,7 @@ def _extract_evidence(lit_results: list, t0_output=None) -> dict:
 def _normalize_extractor(data: dict) -> dict:
     return {
         "claims": data.get("claims", []) if isinstance(data.get("claims"), list) else [],
-        "claim_records": [],
+        "claim_records": _safe_list(data.get("claim_records", [])),
         "metrics": _safe_list(data.get("metrics", [])),
         "methods": data.get("methods", []) if isinstance(data.get("methods"), list) else [],
         "evidence_snippets": _safe_list(data.get("evidence_snippets", [])),
@@ -386,7 +387,7 @@ def _mock_synthesize(extractor_output: dict, critic_output: dict,
     lines.append("## 方法局限")
     lines.append("")
     if methods:
-        for m in list(set(methods))[:3]:
+        for m in list(dict.fromkeys(methods))[:3]:
             clean_method = str(m).replace("**", "").strip()
             lines.append(f"- 输入方法信息：{clean_method}；其适用范围和泛化性需单独验证")
     for cq in critiques[:3]:
@@ -401,7 +402,8 @@ def _mock_synthesize(extractor_output: dict, critic_output: dict,
         lines.append("| --- | --- | --- |")
         for m in metrics[:10]:
             if isinstance(m, dict):
-                lines.append(f"| {m.get('name', 'N/A')} | {m.get('value', 'N/A')} | {m.get('source', 'N/A')} |")
+                refs = ", ".join(f"[{value}]" for value in m.get("evidence_ids", [])) or "待验证"
+                lines.append(f"| {m.get('name', 'N/A')} | {m.get('value', 'N/A')} | {m.get('source', 'N/A')} {refs} |")
         lines.append("")
         lines.append("> 📄 以上指标按原值提取自输入来源，未做数值补全")
     else:
@@ -460,51 +462,9 @@ def _format_literature_for_prompt(lit_results: list) -> str:
 def _attach_claim_provenance(extractor_output: dict, lit_results: list,
                              t0_output=None) -> dict:
     """Keep legacy string claims and add evidence-aware claim records."""
-    output = dict(extractor_output)
-    valid_ids = [
-        str(item.get("source_id")) for item in lit_results
-        if isinstance(item, dict) and item.get("source_id")
-    ]
-    if isinstance(t0_output, dict) and (
-        t0_output.get("markdown_text") or t0_output.get("raw_text")
-    ):
-        valid_ids.insert(0, "D1")
-    source_types = {
-        str(item.get("source_type", "unverified"))
-        for item in lit_results if isinstance(item, dict)
-    }
-    if source_types == {"simulated"}:
-        origin = "simulated"
-        status = "simulated"
-    else:
-        origin = "llm_inference"
-        status = "supported" if valid_ids else "unverified"
-    existing_records = {
-        str(record.get("text", "")): record
-        for record in output.get("claim_records", [])
-        if isinstance(record, dict) and record.get("text")
-    }
-    records = []
-    for claim in output.get("claims", []):
-        text = str(claim).strip()
-        if not text:
-            continue
-        if text in existing_records:
-            records.append(existing_records[text])
-            continue
-        matching_ids = [
-            str(item.get("source_id")) for item in lit_results
-            if isinstance(item, dict) and item.get("source_id")
-            and text in [str(value) for value in item.get("key_findings", [])]
-        ]
-        records.append({
-            "text": text,
-            "evidence_ids": matching_ids or valid_ids,
-            "source_type": origin,
-            "verification_status": status,
-        })
-    output["claim_records"] = records
-    return output
+    from noteforge.evidence import attribute_claims
+
+    return attribute_claims(extractor_output, lit_results, t0_output)
 
 
 def _source_declaration(lit_results: list, has_document: bool = False) -> str:

@@ -1,0 +1,13 @@
+{
+  "fixture_kind": "short excerpt from the original legal text, not current legal advice",
+  "checked_on": "2026-10-11",
+  "source_url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A32024R1689",
+  "source_version": "Regulation (EU) 2024/1689, original Article 1(1)",
+  "document": {
+    "metadata": {"file_name": "Regulation (EU) 2024-1689 - Article 1.txt"},
+    "source_id": "D1",
+    "source_type": "source_document",
+    "raw_text": "The purpose of this Regulation is to improve the functioning of the internal market",
+    "markdown_text": ""
+  }
+}

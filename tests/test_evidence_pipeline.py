@@ -107,7 +107,7 @@ class TestEvidenceStages(unittest.TestCase):
             result = run_policy("AI compliance", external_literature(with_policy=True))
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["policies"][0]["evidence_ids"], ["L1"])
-        self.assertEqual(result["policies"][0]["verification_status"], "supported")
+        self.assertEqual(result["policies"][0]["verification_status"], "referenced")
 
     def test_synthesis_external_source_has_provenance(self):
         result = run_synthesis(external_literature())

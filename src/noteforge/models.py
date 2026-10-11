@@ -216,6 +216,8 @@ class PolicyRecord(JsonModel):
 @dataclass(slots=True)
 class ArtifactSet(JsonModel):
     report: str | None = None
+    report_json: str | None = None
+    report_html: str | None = None
 
 
 @dataclass(slots=True)
@@ -250,3 +252,4 @@ class JobResult(JsonModel):
     warnings: list[str] = field(default_factory=list)
     tech_cases: list[TechnicalCase] = field(default_factory=list)
     policies: list[PolicyRecord] = field(default_factory=list)
+    export_paths: dict[str, Path] = field(default_factory=dict)

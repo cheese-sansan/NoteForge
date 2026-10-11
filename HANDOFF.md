@@ -1,46 +1,71 @@
 # NoteForge handoff
 
-This page records the repository state checked on 2026-09-26 (Asia/Singapore). Recheck changing GitHub and CI state before relying on it. The [2026-08-24 handoff](docs/history/2026-08-24-handoff.md) preserves the earlier release, migration, attribution, and backup evidence.
+Local verification recorded on 2026-10-11 (Asia/Tokyo). GitHub refs and CI must
+be checked live for the exact pushed commit. The
+[2026-09-26 handoff](docs/history/2026-09-26-handoff.md) preserves the earlier
+repository recreation, backup, and verification evidence.
 
-## Current baseline
+## Working baseline and scope
 
-- Project: `cheese-sansan/NoteForge`, recreated public GitHub repository ID `1387866226` (created 2026-09-26 at 00:26:36 Asia/Singapore).
-- The maintenance branch was fast-forwarded into local `main` at `b6907f579e4634c5e3ef148bce17e551f8e11a03`, then pushed to the new remote with the annotated `v0.1.0`, `v0.2.0`, and `v0.3.0` tags. The previous remote `main` was `2c0a1ab2f388d834f087c7641cf5931c74fa624a`.
-- The latest commit before this maintenance work was on 2026-08-24. No product feature release followed v0.3.0.
-- The last checked run on the previous repository, `32655574300`, completed successfully for `2c0a1ab`. It is historical evidence. Check the new repository's run for the current remote `main` before claiming CI success.
-- Package version remains `0.3.0`. The next planned product milestone is [v0.4 report quality](docs/roadmap.md).
+- Development branch: `codex/report-quality`, based on main
+  `50dba34d23ed2042dc4ebf0d7af920a8b5ec1704` (also verified remotely before push).
+- Package version and latest release tag remain `0.3.0`; this is an unreleased
+  v0.4 increment. Historical tags and attribution are preserved.
+- Implementation covers the five approved updates: claim attribution,
+  citation completeness/deduplication, JSON/HTML exports, real-source quality
+  fixtures, and interrupted-job/local cross-process reliability.
+- User authorized implementation and push. This branch has not been merged
+  into main as part of this increment.
 
-## Maintenance scope
+## Implemented behavior
 
-This maintenance pass groups executable helpers in `scripts/`, moves the roadmap under `docs/`, provides a documentation index, and archives the previous handoff. It does not change the SDK, HTTP API v1, persistence schema v3, evidence behavior, or release tags.
+- Unrelated claims no longer receive every available source ID. Literal input
+  support, references alone, missing evidence, and simulation stay distinct.
+  LLM case/policy references alone yield `referenced`.
+- Citation registry assigns stable numeric labels, deduplicates DOI/URL within
+  provenance types, retains aliases, and flags missing references and evidence.
+- New jobs write Markdown, JSON, and standalone escaped HTML. CLI `export` and
+  SDK `export_job` also export completed historical jobs without provider calls
+  or replacing their Markdown.
+- Stages persist results before completion. Resume invalidates interrupted or
+  missing stage results and downstream dependencies, and checks report hashes.
+- Separate execution/storage OS locks coordinate local threads and processes.
+  Status reads remain available during analysis. Retention skips locked jobs.
+- Schema v3 and HTTP API v1 remain compatible. SDK/artifact export fields are
+  additive. See [report quality](docs/report_quality.md) for exact limits.
 
-## Repository map
+## Local validation
 
-| Path | Role |
-| --- | --- |
-| `src/noteforge/` | Installable package, SDK, CLI, API, providers, stages, and storage |
-| `tests/` | Tests, migration fixtures, and API v1 OpenAPI snapshot |
-| `scripts/` | Quality, privacy, OpenAPI, API, and CLI smoke checks |
-| `docs/` | [Documentation index](docs/README.md), guides, roadmap, releases, and archived handoffs |
-| `examples/` | Sample inputs and reports |
-| `README.md`, `README.zh-CN.md` | Public project overview |
-| `DEVELOPMENT.md`, `CONTRIBUTING.md`, `SECURITY.md` | Development and project policies |
+- Windows Python 3.12.14: 172 tests passed; coverage 84.20% (80% gate).
+- Ruff passed; Pyright reported 0 errors and 0 warnings.
+- OpenAPI v1 snapshot, API and CLI/export smoke checks passed.
+- Current-file and complete Git-history privacy audits passed.
+- Docker Compose configuration passed. Local Docker image build/runtime were
+  not repeated; remote CI includes Docker build.
+- Browser QA verified tables, citation links, and escaped script-like content;
+  the QA page had no observed console warnings/errors. A duplicate document
+  title found in the report preview was fixed and guarded by a heading test.
+- One dependency warning remains: Starlette's use of the httpx test client is
+  deprecated. It does not fail the test gate.
 
-## Verification and evidence boundaries
+CI adds a Windows Python 3.12 wheel job alongside Linux Python 3.10-3.13 and
+installed-wheel export smoke checks. Local results are not remote-CI evidence;
+check the branch run's `headSha` and conclusion after push.
 
-The release checks are documented in [DEVELOPMENT.md](DEVELOPMENT.md) and [the v0.3 checklist](docs/release_checklist.md). The earlier handoff records historical wheel, coverage, Docker, API, and migration evidence. A local check does not establish a passing CI run on a new remote commit.
+## Verification limits and remaining roadmap
 
-On 2026-09-26, the current checkout passed Ruff, Pyright (0 errors), 143 tests with 81.66% coverage, the OpenAPI snapshot, API and CLI smoke checks, the privacy audit including Git history, wheel build, and Docker Compose configuration. The tests emitted one dependency deprecation warning. Docker image build and a running-container health check were not rerun locally in this maintenance pass.
+- Fixture excerpts are from real primary sources but are minimal offline
+  snapshots. They do not establish live provider availability or current law.
+- Literal support means matching input text, not independent truth or full-text
+  verification. Citation checks are not an exhaustive semantic claim audit.
+- Scientific conflict/obsolescence detection, presets, and DOCX/PDF exports
+  remain planned; see [roadmap](docs/roadmap.md).
+- Locks cover cooperating processes on a local filesystem. They do not provide
+  a distributed queue or network-filesystem guarantees. Keep `.locks` files
+  while any process uses the output root.
+- The release-date discrepancy and historical v0.3 CI snapshot remain recorded
+  in the archived handoff. No release-history rewrite was performed.
 
-Crossref supplies metadata, not full-text verification. Mock and LLM-simulated records stay explicitly simulated. Persisted v0.2 jobs use the transactional migration path; HTTP `/api/v1` and schema v3 are compatibility boundaries. Storage locks serialize threads in one process, not independent processes.
-
-## Open items
-
-- `CHANGELOG.md` lists v0.3.0 as 2026-07-11, while the release tag was created from a 2026-07-13 commit. The date's meaning needs a decision before editing release history.
-- The historical v0.3.0 tag precedes the CI Python-path fix; retain the tag as an immutable release snapshot.
-- Validate multi-process locking before claiming shared-job concurrency across processes.
-- Keep generated job data and local ignored cache files out of commits.
-
-## Local recovery material
-
-The pre-recreation backup is `E:\NoteForge-backups\20260926-pre-recreate\`. Its complete `noteforge-all.bundle` passed `git bundle verify` and has SHA-256 `2F9F585A0B81B90917D3741158915739BD44CC78BE7873D215D034715A5DC56F`. The directory also contains the previous GitHub repository metadata and remote refs. The archived handoff lists older backups.
+Generated data, previews, package builds, and the local `.venv` are ignored and
+must stay out of commits. Prior recovery material remains recorded in the
+archived handoffs.

@@ -13,6 +13,10 @@ import shutil
 import time
 from pathlib import Path
 
+from noteforge.errors import NoteForgeError
+from noteforge.storage.locking import JobLock
+from noteforge.storage.state import validate_job_id
+
 DEFAULT_RETENTION_DAYS = 7
 
 
@@ -36,18 +40,23 @@ def cleanup_old_jobs(retention_days: int | None = None, dry_run: bool = False,
 
     for entry in os.listdir(jobs_dir):
         job_path = os.path.join(jobs_dir, entry)
-        if not os.path.isdir(job_path):
+        if not os.path.isdir(job_path) or Path(job_path).is_symlink():
             continue
         total += 1
         try:
-            mtime = os.path.getmtime(job_path)
-            if mtime < cutoff:
-                if dry_run:
-                    print(f"[DRY-RUN] 将删除: {job_path} (mtime: {time.ctime(mtime)})")
-                else:
-                    shutil.rmtree(job_path)
-                    print(f"[CLEAN] 已删除: {job_path}")
-                deleted += 1
+            validate_job_id(entry)
+            with JobLock(entry, output_root, execution=True, timeout=0), JobLock(entry, output_root, timeout=0):
+                mtime = os.path.getmtime(job_path)
+                if mtime < cutoff:
+                    if dry_run:
+                        print(f"[DRY-RUN] 将删除: {job_path} (mtime: {time.ctime(mtime)})")
+                    else:
+                        shutil.rmtree(job_path)
+                        print(f"[CLEAN] 已删除: {job_path}")
+                    deleted += 1
+        except NoteForgeError:
+            # A running job or a concurrent storage operation must not be removed.
+            continue
         except Exception as e:
             print(f"[ERROR] 无法处理 {job_path}: {e}")
 

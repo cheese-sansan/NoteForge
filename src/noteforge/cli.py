@@ -9,6 +9,7 @@ from pathlib import Path
 
 from noteforge.config import load_env
 from noteforge.errors import NoteForgeError
+from noteforge.export import export_job
 from noteforge.models import AnalysisRequest, ProviderName
 from noteforge.pipeline import run_job
 from noteforge.storage.migration import migrate_all
@@ -46,6 +47,10 @@ def build_parser() -> argparse.ArgumentParser:
     report_parser = subcommands.add_parser("report", help="Print a completed job report")
     report_parser.add_argument("job_id")
     report_parser.add_argument("--output-root", type=Path, default=Path("outputs"))
+    export_parser = subcommands.add_parser("export", help="Export a completed job as JSON or HTML")
+    export_parser.add_argument("job_id")
+    export_parser.add_argument("--format", choices=["json", "html"], default="json")
+    export_parser.add_argument("--output-root", type=Path, default=Path("outputs"))
     return parser
 
 
@@ -85,6 +90,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1 if errors else 0
         if args.command == "report":
             return _print_report(args.job_id, args.output_root)
+        if args.command == "export":
+            print(export_job(args.job_id, format=args.format, output_root=args.output_root))
+            return 0
     except (NoteForgeError, ValueError, FileNotFoundError) as error:
         code = error.code.value if isinstance(error, NoteForgeError) else "INPUT_INVALID"
         print(f"{code}: {error}", file=sys.stderr)

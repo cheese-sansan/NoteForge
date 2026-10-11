@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import secrets
 from collections.abc import Callable
@@ -10,6 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from noteforge.errors import ErrorCode, NoteForgeError
+from noteforge.evidence import audit_report
+from noteforge.export import report_payload, write_exports
 from noteforge.logging import get_logger
 from noteforge.models import (
     AnalysisRequest,
@@ -32,7 +35,9 @@ from noteforge.stages.policy import run as assess_policy
 from noteforge.stages.report import run as assemble_report
 from noteforge.stages.synthesis import run as synthesize
 from noteforge.stages.technical_cases import run as analyze_technical_cases
+from noteforge.storage.atomic import write_text
 from noteforge.storage.context import ContextStore
+from noteforge.storage.locking import JobLock
 from noteforge.storage.state import StageStatus, StateManager, now_iso, validate_job_id
 
 log = get_logger(__name__)
@@ -47,8 +52,14 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
     if not isinstance(request, AnalysisRequest):
         raise TypeError("run_job requires AnalysisRequest")
     job_id = validate_job_id(request.job_id or _generate_job_id())
+    with JobLock(job_id, output_root, execution=True):
+        return _run_job(request, job_id, output_root)
+
+
+def _run_job(request: AnalysisRequest, job_id: str, output_root: Path) -> JobResult:
     manager = StateManager(job_id, output_root)
     context = ContextStore(job_id, output_root)
+    _recover_job(manager, context)
     state = manager.load_state()
     if state.status is JobStatus.COMPLETED:
         return _build_result(job_id, output_root, context, state.status)
@@ -72,13 +83,16 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
         current_stage = "document_parse"
         if current_stage not in manager.completed_stages():
             if file_path:
-                document = _execute(manager, current_stage, lambda: parse_document(str(file_path)))
+                document = _execute(manager, current_stage, lambda: parse_document(str(file_path)),
+                                    lambda value: context.save("document", {
+                                        **value, "source_id": "D1", "source_type": "source_document",
+                                        "source_provider": "local-file",
+                                    }))
                 document.update({
                     "source_id": "D1",
                     "source_type": "source_document",
                     "source_provider": "local-file",
                 })
-                context.save("document", document)
                 if not topic:
                     topic = document.get("metadata", {}).get("file_name", "文档分析")
             else:
@@ -98,12 +112,15 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
         keywords = context.load("keywords")
         current_stage = "keyword_extract"
         if current_stage not in manager.completed_stages():
-            keywords = _execute(manager, current_stage, lambda: extract_keywords(topic))
+            keywords = _execute(manager, current_stage, lambda: extract_keywords(topic),
+                                lambda value: context.save("keywords", {
+                                    **value, "source_id": "D1" if document else "INPUT1",
+                                    "source_type": "source_document" if document else "unverified",
+                                }))
             keywords.update({
                 "source_id": "D1" if document else "INPUT1",
                 "source_type": "source_document" if document else "unverified",
             })
-            context.save("keywords", keywords)
 
         literature = context.load("literature")
         current_stage = "literature_search"
@@ -111,36 +128,36 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
             typed_literature = _execute(
                 manager, current_stage,
                 lambda: search_literature(query_from_keyword_output(keywords), provider=provider),
+                lambda value: context.save("literature", value.to_dict()),
             )
             literature = typed_literature.to_dict()
-            context.save("literature", literature)
 
         synthesis = context.load("synthesis")
         current_stage = "synthesis"
         if current_stage not in manager.completed_stages():
-            synthesis = _execute(manager, current_stage, lambda: synthesize(literature, document))
-            context.save("synthesis", synthesis)
+            synthesis = _execute(manager, current_stage, lambda: synthesize(literature, document),
+                                 lambda value: context.save("synthesis", value))
 
         need_cases, need_policy = _route_stages(keywords)
-        technical = context.load("technical_cases")
+        technical = context.load("technical_cases") or {"status": "not_requested", "warnings": [], "cases": []}
         current_stage = "technical_cases"
         if current_stage not in manager.completed_stages():
             if need_cases:
                 technical = _execute(
                     manager, current_stage,
                     lambda: analyze_technical_cases(topic, literature, synthesis, document),
+                    lambda value: context.save("technical_cases", value),
                 )
-                context.save("technical_cases", technical)
             else:
                 manager.transition_stage(current_stage, StageStatus.SKIPPED)
                 technical = {"status": "not_requested", "warnings": [], "cases": []}
 
-        policy = context.load("policy_assessment")
+        policy = context.load("policy_assessment") or {"status": "not_requested", "warnings": [], "policies": []}
         current_stage = "policy_assessment"
         if current_stage not in manager.completed_stages():
             if need_policy:
-                policy = _execute(manager, current_stage, lambda: assess_policy(topic, literature, document))
-                context.save("policy_assessment", policy)
+                policy = _execute(manager, current_stage, lambda: assess_policy(topic, literature, document),
+                                  lambda value: context.save("policy_assessment", value))
             else:
                 manager.transition_stage(current_stage, StageStatus.SKIPPED)
                 policy = {"status": "not_requested", "warnings": [], "policies": []}
@@ -150,16 +167,15 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
         current_stage = "report_generation"
         report_path = manager.job_dir / "report.md"
         if current_stage not in manager.completed_stages():
-            report = _execute(
+            _execute(
                 manager, current_stage,
                 lambda: assemble_report(topic, synthesis, technical, policy, sources, warnings),
+                lambda value: _persist_report(manager, context, topic, value, synthesis,
+                                              technical, policy, sources, warnings),
             )
-            report_path.write_text(report, encoding="utf-8")
-            context.save("report", {
-                "report_path": str(report_path), "sources": sources, "warnings": warnings,
-            })
         state = manager.load_state()
-        state.artifacts = ArtifactSet(report=str(report_path))
+        state.artifacts = ArtifactSet(report=str(report_path), report_json=str(manager.job_dir / "report.json"),
+                                      report_html=str(manager.job_dir / "report.html"))
         manager.save_state(state)
         manager.set_completed()
         return _build_result(job_id, output_root, context, JobStatus.COMPLETED)
@@ -176,11 +192,51 @@ def run_job(request: AnalysisRequest, *, output_root: Path = Path("outputs")) ->
         raise structured from error
 
 
-def _execute(manager: StateManager, stage: str, action: Callable[[], Any]) -> Any:
+def _execute(manager: StateManager, stage: str, action: Callable[[], Any],
+             persist: Callable[[Any], Any]) -> Any:
     manager.transition_stage(stage, StageStatus.RUNNING)
     result = action()
-    manager.transition_stage(stage, StageStatus.COMPLETED)
+    with JobLock(manager.job_id, manager.output_root):
+        persist(result)
+        manager.transition_stage(stage, StageStatus.COMPLETED)
     return result
+
+
+def _persist_report(manager, context, topic, markdown, synthesis, technical, policy, sources, warnings):
+    audit = audit_report(synthesis, technical, policy, sources)
+    payload = report_payload(topic, markdown, synthesis, technical, policy, sources, warnings, audit)
+    report_path = manager.job_dir / "report.md"
+    write_text(report_path, markdown)
+    paths = write_exports(manager.job_dir, payload)
+    hashes = {name: hashlib.sha256((manager.job_dir / name).read_bytes()).hexdigest()
+              for name in ("report.md", "report.json", "report.html")}
+    context.save("report", {"report_path": str(report_path), "sources": audit["sources"],
+                            "warnings": payload["warnings"], "citation_aliases": audit["aliases"],
+                            "quality": audit["quality"], "export_paths": paths, "artifact_hashes": hashes})
+
+
+def _recover_job(manager: StateManager, context: ContextStore):
+    keys = ["document", "keywords", "literature", "synthesis", "technical_cases", "policy_assessment", "report"]
+    with JobLock(manager.job_id, manager.output_root):
+        state = manager.load_state()
+        data = context.load_all()
+        for index, name in enumerate(EXECUTION_ORDER):
+            stage = state.stages[name]
+            missing = stage.status is StageStatus.COMPLETED and data.get(keys[index]) is None
+            if name == "report_generation" and stage.status is StageStatus.COMPLETED:
+                report_data = data.get("report") or {}
+                missing = missing or not (manager.job_dir / "report.md").is_file()
+                for filename, digest in report_data.get("artifact_hashes", {}).items():
+                    # Only inspect the three canonical artifacts, regardless of stored input.
+                    if filename not in {"report.md", "report.json", "report.html"}:
+                        missing = True
+                        continue
+                    path = manager.job_dir / filename
+                    missing = missing or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest
+            if missing or stage.status in {StageStatus.RUNNING, StageStatus.FAILED}:
+                manager.recover_from(name)
+                context.discard(keys[index:])
+                break
 
 
 def _build_result(job_id: str, output_root: Path, context: ContextStore,
@@ -198,6 +254,7 @@ def _build_result(job_id: str, output_root: Path, context: ContextStore,
         warnings=list(report_data.get("warnings", [])),
         tech_cases=[TechnicalCase.from_dict(item) for item in technical.get("cases", [])],
         policies=[PolicyRecord.from_dict(item) for item in policy.get("policies", [])],
+        export_paths={key: Path(value) for key, value in report_data.get("export_paths", {}).items()},
     )
 
 

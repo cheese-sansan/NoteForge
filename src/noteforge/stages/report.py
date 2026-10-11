@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import re
+
+from noteforge.evidence import audit_report
+
 
 def run(topic: str, t3_output, t5_output: dict | None = None,
         t6_output: dict | None = None, sources: list[dict] | None = None,
@@ -12,18 +16,25 @@ def run(topic: str, t3_output, t5_output: dict | None = None,
     t5_output = t5_output if isinstance(t5_output, dict) else {}
     t6_output = t6_output if isinstance(t6_output, dict) else {}
     sources = list(sources or [])
-    warnings = _deduplicate(list(warnings or []))
+    audit = audit_report(t3_output, t5_output, t6_output, sources)
+    canonical_sources: list[dict] = audit["sources"]
+    warnings = _deduplicate(list(warnings or []) + audit["warnings"])
 
-    lines = [f"# {topic} 研究报告", "", _mode_banner(sources), ""]
+    lines = [f"# {topic} 研究报告", "", _mode_banner(canonical_sources), ""]
     lines.extend(["## 学术提炼", ""])
-    summary = str(t3_output.get("final_report", "")).strip()
+    summary = _embed_summary(str(t3_output.get("final_report", "")).strip())
     lines.append(summary or "证据不足，无法形成可验证的学术提炼结论。")
     lines.extend(["", "## 技术案例", ""])
     lines.extend(_render_cases(t5_output.get("cases", [])))
     lines.extend(["", "## 政策影响", ""])
     lines.extend(_render_policies(t6_output.get("policies", [])))
     lines.extend(["", "## 数据来源", ""])
-    lines.extend(_render_sources(sources))
+    lines.extend(_render_sources(canonical_sources))
+    lines.extend(["", "## 引用与证据检查", "",
+                  "> 检查范围为来源追溯与字面匹配，不代表语义验证或全文核验。", ""])
+    for claim in audit["quality"]["claims"]:
+        lines.append(f"- {claim.get('text', '')}：{claim.get('evidence_grade', 'unverified')} / "
+                     f"{claim.get('verification_status', 'unverified')}")
 
     all_warnings = _deduplicate(
         warnings
@@ -39,7 +50,12 @@ def run(topic: str, t3_output, t5_output: dict | None = None,
         "> 本报告由自动化流水线生成。LLM 推断、模拟数据及未验证信息均已单独标记；重要结论必须回查原始来源。",
         "",
     ])
-    return "\n".join(lines)
+    numbers = {item["source_id"]: item["citation_number"] for item in canonical_sources}
+    def numbered(match):
+        key = match.group(1)
+        canonical = audit["aliases"].get(key)
+        return f"[{numbers[canonical]}] [{key}]" if canonical else match.group(0)
+    return re.sub(r"\[([A-Za-z][A-Za-z0-9_-]*\d+)\]", numbered, "\n".join(lines))
 
 
 def _mode_banner(sources: list[dict]) -> str:
@@ -57,6 +73,19 @@ def _mode_banner(sources: list[dict]) -> str:
     else:
         mode = "证据不足"
     return f"> 数据模式：**{mode}**"
+
+
+def _embed_summary(summary: str) -> str:
+    lines = summary.splitlines()
+    if lines and lines[0].startswith("# "):
+        lines.pop(0)
+    result = []
+    for line in lines:
+        heading = re.match(r"^(#{1,6}) (.*)$", line)
+        if heading:
+            line = "#" * min(6, max(3, len(heading[1]) + 1)) + " " + heading[2]
+        result.append(line)
+    return "\n".join(result).strip()
 
 
 def _render_cases(cases) -> list[str]:
@@ -111,7 +140,9 @@ def _render_sources(sources: list[dict]) -> list[str]:
         suffix = f" DOI: {doi}." if doi else ""
         if url:
             suffix += f" {url}"
-        lines.append(f"- [{source_id}] {title} — {provider}/{source_type}.{suffix}".rstrip())
+        aliases = [value for value in source.get("aliases", []) if value != source_id]
+        alias_text = "；别名：" + ", ".join(aliases) if aliases else ""
+        lines.append(f"- [{source_id}] {title} — {provider}/{source_type}.{suffix}{alias_text}".rstrip())
     return lines
 
 

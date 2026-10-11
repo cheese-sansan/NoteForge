@@ -22,13 +22,19 @@ The current baseline provides:
 
 ## v0.4: Report quality
 
+The current unreleased increment implements specific claim attribution,
+DOI/URL citation deduplication and completeness warnings, literal/reference-only
+evidence grades, JSON/HTML exports, offline real-source fixtures, and local
+cross-process recovery/locking. See [report quality](report_quality.md) for
+contracts and verification limits.
+
 The next release is reserved for report-level trust and portability:
 
-- Citation numbering, DOI/URL deduplication, and citation completeness checks.
-- Evidence grades plus conflict and obsolescence detection.
+- Citation numbering, DOI/URL deduplication, and citation completeness checks (implemented).
+- Evidence grades (implemented), plus scientific conflict and obsolescence detection (planned).
 - Report presets for technical research, literature review, industry analysis, policy analysis, and product comparison.
-- JSON and HTML exports before DOCX and PDF.
-- Representative real-source fixtures for technical-case and policy-assessment validation.
+- JSON and HTML exports (implemented) before DOCX and PDF.
+- Representative real-source fixtures for technical-case and policy-assessment validation (implemented as minimal offline excerpts).
 
 ## v1.0 release conditions
 

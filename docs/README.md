@@ -5,6 +5,7 @@
 - [CLI, TUI, and HTTP API](cli_tui_api.md)
 - [Python SDK and provider integration](developer_integration.md)
 - [Evidence modes and literature providers](mock_vs_real_provider.md)
+- [Report quality, exports, and recovery](report_quality.md)
 - [Migration from v0.2](migration_v0.3.md)
 - [Sample inputs and reports](../examples/)
 

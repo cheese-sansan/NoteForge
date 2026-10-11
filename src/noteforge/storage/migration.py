@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import threading
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +17,7 @@ from noteforge.models import (
     StageRecord,
     StageStatus,
 )
+from noteforge.storage.locking import JobLock
 from noteforge.storage.state import BASE_STAGES, DEFAULT_OUTPUT_ROOT, now_iso, validate_job_id
 
 TASK_TO_STAGE = {
@@ -36,8 +36,6 @@ LEGACY_STAGE_STATUS = {
     "完成": StageStatus.COMPLETED,
     "失败": StageStatus.FAILED,
 }
-_locks: dict[str, threading.RLock] = {}
-_locks_guard = threading.Lock()
 
 
 def migrate_job(job_id: str, output_root: Path | str = DEFAULT_OUTPUT_ROOT) -> bool:
@@ -48,10 +46,7 @@ def migrate_job(job_id: str, output_root: Path | str = DEFAULT_OUTPUT_ROOT) -> b
     context_path = job_dir / "context_data.json"
     if not state_path.exists() and not context_path.exists():
         return False
-    lock_key = str(job_dir.resolve())
-    with _locks_guard:
-        lock = _locks.setdefault(lock_key, threading.RLock())
-    with lock:
+    with JobLock(job_id, root):
         state_existed = state_path.exists()
         context_existed = context_path.exists()
         state_data = _read_json(state_path) if state_path.exists() else None

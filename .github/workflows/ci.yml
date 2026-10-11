@@ -32,6 +32,8 @@ jobs:
           noteforge run --topic "wheel smoke" --provider mock --job-id wheel-smoke --output-root /tmp/noteforge-output
           noteforge jobs list --output-root /tmp/noteforge-output
           noteforge report wheel-smoke --output-root /tmp/noteforge-output >/dev/null
+          noteforge export wheel-smoke --format json --output-root /tmp/noteforge-output
+          noteforge export wheel-smoke --format html --output-root /tmp/noteforge-output
           noteforge jobs migrate --all --output-root /tmp/noteforge-output
           printf '0\n' | noteforge tui
           noteforge api --help
@@ -51,12 +53,16 @@ jobs:
         run: python scripts/privacy_audit.py
 
   compatibility:
-    name: Python ${{ matrix.python-version }} wheel
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }} wheel
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -66,6 +72,7 @@ jobs:
       - run: python -m pip install --upgrade pip build
       - run: python -m build --wheel
       - name: Install and test wheel
+        shell: bash
         run: |
           WHEEL=$(find dist -name '*.whl' -print -quit)
           python -m pip install "${WHEEL}[api,documents,dev]"

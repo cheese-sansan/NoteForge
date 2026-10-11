@@ -1,6 +1,7 @@
 """Stable public SDK surface for NoteForge."""
 
 from noteforge.errors import ErrorCode, ErrorRecord, NoteForgeError
+from noteforge.export import export_job
 from noteforge.models import (
     AnalysisRequest,
     JobResult,
@@ -35,5 +36,6 @@ __all__ = [
     "SourceType",
     "TechnicalCase",
     "run_job",
+    "export_job",
     "__version__",
 ]

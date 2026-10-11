@@ -4,6 +4,21 @@ All notable changes to NoteForge are documented here.
 
 ## Unreleased
 
+### Added
+
+- Stable numeric citations with DOI/URL deduplication, source aliases, and citation completeness warnings.
+- Literal/reference-only/unverified/simulated evidence grades and fixed real-source quality fixtures.
+- Standalone JSON/HTML reports, `noteforge export`, `export_job`, and additive SDK/artifact export paths.
+- Spawn-process regression coverage and a Windows wheel CI job for local job/storage locking.
+
+### Fixed
+
+- Unrelated claims no longer inherit all available sources or become automatically supported.
+- LLM case/policy citations alone now yield `referenced` instead of `supported`.
+- Stage completion follows durable result persistence; resume repairs interrupted stages, missing context,
+  and missing/mismatched report artifacts while preserving earlier completed work.
+- OS-owned job locks serialize cooperating local processes; retention cleanup skips active jobs.
+
 ### Changed
 
 - Group local check and smoke entry points under `scripts/` and remove a duplicate API launcher.

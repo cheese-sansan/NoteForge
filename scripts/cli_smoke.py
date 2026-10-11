@@ -20,6 +20,9 @@ def smoke() -> int:
             return 1
         if main(["report", "smoke_job", "--output-root", str(root)]):
             return 1
+        for format in ("json", "html"):
+            if main(["export", "smoke_job", "--format", format, "--output-root", str(root)]):
+                return 1
     print("CLI smoke passed")
     return 0
 

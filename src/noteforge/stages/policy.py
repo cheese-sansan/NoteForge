@@ -108,7 +108,7 @@ def _normalize_policies(raw_policies, evidence: list[dict]) -> list[dict]:
         item.update({
             "evidence_ids": evidence_ids,
             "source_type": "llm_inference",
-            "verification_status": "supported",
+            "verification_status": "referenced",
         })
         normalized.append(item)
     return normalized

@@ -52,7 +52,9 @@ CI builds and installs a wheel before testing on Python 3.10, 3.11, 3.12, and 3.
 
 ## Persistence and migration
 
-`StateManager` and `ContextStore` validate job IDs and write through atomic replacement. The migration layer backs up v0.2 files byte-for-byte, validates both schema-v3 documents before replacement, and restores the originals if either replacement fails.
+`StateManager` and `ContextStore` validate job IDs and write through unique, flushed temporary files and atomic replacement. Shared OS locks serialize cooperating local processes. Separate execution locks serialize each job without blocking status reads for the duration of analysis. The migration layer backs up v0.2 files byte-for-byte, validates both schema-v3 documents before replacement, and restores the originals if either replacement fails.
+
+Stages persist results before `COMPLETED`. Resume validates stage context and the report artifact manifest, invalidating interrupted/missing results and their dependents while reusing preceding stages. See [report quality](docs/report_quality.md) for contracts and limits. CI includes Windows Python 3.12 and the Linux Python matrix so both OS lock adapters are exercised.
 
 New persisted fields require a schema decision, JSON round-trip tests, corruption handling, and concurrent-read coverage. Migration behavior must remain idempotent.
 
